@@ -7,11 +7,14 @@
     "watch": "nodemon app.js localhost 3000"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.1",
+    "bootstrap": "^4.5.3",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "^4.16.4",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
+    "jquery": "^3.5.1",
     "morgan": "~1.9.1",
     "serve-static": "^1.14.1"
   }
