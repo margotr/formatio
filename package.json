@@ -1,0 +1,25 @@
+{
+  "name": "formatio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/margotr/formatio.git"
+  },
+  "keywords": [
+    "formatio"
+  ],
+  "author": "Margot Rutgers",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/margotr/formatio/issues"
+  },
+  "homepage": "https://github.com/margotr/formatio#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
