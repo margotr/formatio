@@ -1,7 +1,7 @@
 //Environment constants:
 const TENLINE = 2 //width of fat lines
 const NORMALLINE = 1 //width of thin lines
-const INVERTED = -1 //invert the Y axis
+const INVERTED = 1 //invert the Y axis
 
 let FACTOR = 30 //target amount of grids 
 
@@ -21,7 +21,7 @@ class Environment {
     this.POSITIVE = color(0, 255, 0)
     this.NEGATIVE = color(255, 0, 0)
     
-    this.zoomFactor = 0.05;
+    this.zoomFactor = 0.05
     
     this.maximumZoom = 10000000; //100 pixels per meter
     this.minimumZoom = 20; //0.1 pixel per meter
@@ -187,16 +187,20 @@ class Environment {
   getFocus() {
     return createVector((mouseX / FACTOR) - this.pos.x, (mouseY / FACTOR) - this.pos.y);
   }
-  update() {
-    cursor(ARROW)
+  update(pos) {
     this.updateZoom()
-    if (mouseIsPressed && mouseButton === LEFT) { 
-      this.updateFocus(createVector(mouseX - pmouseX, mouseY - pmouseY))
-      cursor('grab');
-      }
+    if (!pos) {
+        if (mouseIsPressed && mouseButton === LEFT) 
+        { 
+            this.updateFocus(createVector(mouseX - pmouseX, mouseY - pmouseY))
+        }
+    } else {
+        this.updateFocus(pos)
+    }
   }
+  
   draw() {
-    this.update();
+    //this.update()
     this.drawBackground();  
     this.drawBlocks()
     this.drawZero()

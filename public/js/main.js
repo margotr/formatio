@@ -16,24 +16,25 @@ function draw() {
   getInput()
 
   myBlob.draw()
+
+  movePos(myBlob.move(getInput()))
 }
 
-class World {
-  constructor() {
-    
-  }
-}
 function getPos(pos) {
   return environment.getPos(pos)
+}
+function movePos(pos) {
+  environment.update(pos)
 }
 
 function getInput() {
   let a = myBlob.getPos()
   let b = environment.getFocus()
   drawCircle(b, color(255, 0, 255))
-  let dir = p5.Vector.sub(a, b)
+  let dir = p5.Vector.sub(b, a)
+  dir.mult(0.1)
   drawCircle(dir, color(0, 255, 0))
-  console.log(dir)
+  //console.log(dir)
   return dir
 }
 
@@ -64,6 +65,7 @@ class Blob {
 
   move(amount) {
     this.elements.forEach(element => element.move(amount))
+    return this.getPos()
   }
   addElement(elem) {
     this.elements.push(elem)
