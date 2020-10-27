@@ -1,0 +1,1 @@
+//random functions meant for general in game purposes
