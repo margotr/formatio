@@ -9,18 +9,28 @@ let myid
 
 let status = dead
 let cells = []
-//socket connection:
+
+let isMobile, fsbutton, orientation
+
+let bg
+
 let socket
-const host = 'http://localhost:3000'
+//change to host address
+const host = 'http://82.197.208.126:3000'
 
 function setup() {
   myPos = createVector(0, 0)
-  camera = {focus: createVector(0, 0), zoom: 1}
+  camera = {focus: createVector(0, 0)}
+  bg = color(51, 51, 51)
+
+  isMobile = isMobileDevice()
   screen = createCanvas(windowWidth, windowHeight)
   environment = new Environment()
   
+  fsbutton = new FullScreenButton()
+  //orientation = window.orientation
   //connect the socket
-  socket = io.connect(host)
+  socket = io()
 
   socket.on('update', update)
   socket.on('start', startPlayer)
@@ -33,10 +43,18 @@ function draw() {
   updateCamera()
   environment.draw()
   cells.forEach(cell => cell.draw())
+
+  fsbutton.draw()
+
+  if (isMobile) drawMobileInput()
 }
 
 function registerPlayer() {
   socket.emit('newplayer')
+}
+
+function isMobileDevice() {
+  return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
 }
 
 function startPlayer(data) {
@@ -47,20 +65,6 @@ function startPlayer(data) {
     updateInput()
 }
 
-function isDead() {
-  status = dead
-}
-
-function updatePos() {
-  if (status === alive)
-  for (let cell of cells) {
-    if (cell.owner === myid) {
-      myPos = cell.pos
-      break
-    }
-  }
-}
-
 function update(data) {
   cells = []
   //console.log(data.cells)
@@ -69,58 +73,4 @@ function update(data) {
   }
 }
 
-class Cell {
-  constructor(owner, pos) {
-    this.owner = owner
-    this.pos = createVector(pos.x, pos.y)
-  }
-
-  getPos() {
-    return this.pos
-  }
-  draw() {
-    push()
-      let p = getFocus(this.pos)
-      if (this.owner == myid) {
-        //console.log('focus = ', p)
-      }
-      if (inbounds(p))
-      {
-        fill(255, 0, 0)
-        circle(p.x, p.y, 50)
-        fill(255)
-        textAlign(CENTER)
-        text(this.owner, p.x, p.y - 50)
-      }
-    pop()
-  }
-}
-
-class Element extends Cell {
-  constructor(owner, type, pos) {
-    super(owner, pos)
-    this.type = type
-  }
-  draw() {
-    //
-    //reference p:
-    let p = getFocus(this.pos)
-    if (inbounds(p)) {
-      push()
-        fill(255, 0, 0)
-        circle(p.x, p.y, 30)
-      pop()
-    }
-  }
-
-  getWeight() {
-    return 1
-  }
-  getPos() {
-    return this.pos
-  }
-  move(amount) {
-    this.pos.add(amount)
-  }
-}
 

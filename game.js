@@ -17,11 +17,8 @@ class Game {
         return out
     }
     clean(ids) {
-        //these are the players that are still connected, any not in this list can be removed
         for (let i = this.players.length - 1; i >= 0; i--) {
-            //console.log('player: ', this.players[i])
             let inlist = ids.find(id => this.players[i].getID() === id)
-            //console.log(inlist)
             if (!inlist) {
                 console.log('removing player: ', this.players[i])
                 this.players.splice(i, 1)
@@ -37,7 +34,7 @@ class Game {
     }
     addPlayer(id) {
         this.players.push(new Player(id, {x:0, y: 0}))
-        console.log('this.players = ', this.players)
+        console.log('current players: ', this.players)
     }
     getPlayer(id) {
         for (let i = 0; i < this.players.length; i++) {
@@ -45,16 +42,14 @@ class Game {
         }
         return null
     }
-    updatePlayer(input) {
-        let player = this.getPlayer(input.id)
-        //console.log('updating player: ', player, 'input: ', input)
+    updatePlayerInput(id, input) {
+        let player = this.getPlayer(id)
         if (!player) 
         {
-            //handle missing player input
+            //handle missing player input -> remove player(?)
             return null
         }
-        player.updateInput(input.input)
-        //player.updateInput(input)
+        player.updateInput(input)
     }
 }
 

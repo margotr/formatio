@@ -1,26 +1,35 @@
 function updateCamera() {
     updatePos()
-    //console.log(myPos, halfScreen())
     camera.focus = createVector(myPos.x - halfScreen().x,
                                 myPos.y - halfScreen().y)
 
 }
 
 function getFocus(from) {
-    //console.log('focus from: ', from)
         return p5.Vector.sub(from, camera.focus)
 }
+
+function updatePos() {
+    if (status === alive)
+    for (let cell of cells) {
+      if (cell.owner === myid) {
+        myPos = cell.pos
+        break
+      }
+    }
+  }
 
 function halfScreen() {
     return createVector(width / 2, height / 2)
 }
+
 function inbounds(pos) {
     return (pos.x > 0 && pos.x < windowWidth && pos.y > 0 && pos.y < windowHeight)
 }
 
 function Environment() {
     this.draw = function() {
-        background(51)
+        background(bg)
         this.drawCircle(createVector(0, 0), color(255, 255, 255))
         this.drawGrid(25)
     }
@@ -48,20 +57,20 @@ function Environment() {
             for (let x = p.x, i = fourline.x / spacing; x < p.x + width; x+= spacing, i++) {
                 if (i % 4 === 0) {
                     let pos = start.x + x
-                    stroke(255, 0, 0)
+                    stroke(255, 0, 0, 100)
                     text(Math.round(pos), x, 50)
                 } else {
-                    stroke(255, 255, 255)
+                    stroke(255, 255, 255, 100)
                 }
                 line(x, 0, x, height)
             }
-            for (let y = p.y, i = fourline.y / spacing; y < p.y + width; y+= spacing, i++) {
+            for (let y = p.y, i = fourline.y / spacing; y < p.y + height; y+= spacing, i++) {
                 if (i % 4 === 0) {
                     let pos = start.y + y
-                    stroke(255, 0, 0)
+                    stroke(255, 0, 0, 100)
                     text(Math.round(pos), 50, y)
                 } else {
-                    stroke(255, 255, 255)
+                    stroke(255, 255, 255, 100)
                 }
                 line(0, y, width, y)
             }
