@@ -17,7 +17,7 @@ function sendInput() {
 
 function updateInput() {
     sendInput()
-    if (status === alive) setTimeout(updateInput, 20) //50hz input
+    if (status === alive) setTimeout(updateInput, 34) //~30hz input
 }
 
 function getPCInput() {
@@ -30,35 +30,41 @@ function getPCInput() {
 }
 
 function getMobileInput() {
+    let dir = getControllerInput(touches)
+    return dir
+}
+
+function getControllerInput(presses) {
     let controllerfound = false
     let diff = {x: 0, y: 0}
-    //bg = Math.round(touches.length * 30)
-    for (let t of touches) {
+    for (let t of presses) {
         let isnewcontrol = newController(t)
         if (isnewcontrol) {
             controllerfound = true
             setController(t)
-            //alert('new controller')
         }
         else {
             //check if the touch has a line connected to the controller
             let iscontrol = isController(t)
             if (iscontrol) {
                 controllerfound = true
-                let angle = atan2(t.y - controller.origin.y , t.x - controller.origin.x)
-                let mag = dist(controller.origin.x, controller.origin.y, t.x, t.y)
-                mag = constrain(mag, 0, controller.max)
-                controller.dir.x = mag * cos(angle)
-                controller.dir.y = mag * sin(angle)
-                let inv = 1 / controller.max
-                diff = {x: controller.dir.x * inv, y: controller.dir.y * inv}
+                diff = getBounceInput(t)
                 pcontrol = t
             }
         }
     }
     if (!controllerfound) resetController()
-    
     return diff
+}
+
+function getBounceInput(t) {
+    let angle = atan2(t.y - controller.origin.y , t.x - controller.origin.x)
+    let mag = dist(controller.origin.x, controller.origin.y, t.x, t.y)
+    mag = constrain(mag, 0, controller.max)
+    controller.dir.x = mag * cos(angle)
+    controller.dir.y = mag * sin(angle)
+    let inv = 1 / sq(controller.max)
+    return {x: controller.dir.x * mag * inv, y: controller.dir.y * mag * inv}
 }
 function drawMobileInput() {
     push()
@@ -91,19 +97,10 @@ function isController(touch) {
 }
 
 function newController(touch) {
-    //bg = touch.x
     if (touch.x < halfScreen().x) {
-        //alert('left')
         if (!controller.active) {
-            //bg = color(255, 0, 0)
             return true
         }
     }
-    //bg = 0
     return false
-}
-function getTouchType(touch) {
-    for (let pt of ptouches) {
-
-    }
 }

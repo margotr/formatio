@@ -8,20 +8,30 @@ class Cell {
       return this.pos
     }
     draw() {
-      push()
         let p = getFocus(this.pos)
         if (this.owner == myid) {
           //console.log('focus = ', p)
         }
-        if (inbounds(p))
+        if (true)
         {
-          fill(255, 0, 0)
-          circle(p.x, p.y, 50)
+          push()
+          fill(255, 0, 0, 255)
+          //ambientMaterial(255, 100, 100, 255)
+          //pointLight(250, 250, 250, 50, 0, 50)
+          noStroke()
+          Circle(p.x, p.y, ground, 50)
           fill(255)
           textAlign(CENTER)
+          textFont(font)
+          text('x: ' + Math.round(this.pos.x) + 'y: ' + Math.round(this.pos.y), p.x, p.y - 70)
           text(this.owner, p.x, p.y - 50)
+          pop()
         }
-      pop()
+    }
+    drawLights() {
+      pointLight(250, 250, 250, 0, 0, ground + 30)
+     // directionalLight(255, 0, 255, 0.5, 1, -1)
+      //drawLight(color(255, 255, 255), createVector(0, 0, 20))
     }
   }
   

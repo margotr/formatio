@@ -18,6 +18,11 @@ app.get("/landing", function (req, res) {
   res.sendFile(path.join(__dirname + "/public/landing.html"));
 });
 
+app.get("/fonts",  (req, res) => {
+  console.log('got font req')
+  res.sendFile(path.join(__dirname + "/public/fonts/Roboto-Medium.otf"))
+})
+
 const server = app.listen(port, () => {
   console.log(`Formatio listening at http://localhost:${port}`);
 });
@@ -30,7 +35,8 @@ const game = new gameEnv.Game()
 function runGames() {
   game.run()
   io.sockets.emit('update', game.getGameData())
-  setTimeout(runGames, 20)
+  //important! this is the update rate of the game, should match that of client side for best results
+  setTimeout(runGames, 34)
 }
 runGames()
 

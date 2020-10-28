@@ -1,12 +1,16 @@
+const World = require('./world.js')
+
 class Game {
     constructor() {
         this.players = []
+        this.world = new World()
         //console.log(this.players)
     }
     run() {
         for (let player of this.players) {
             player.update()
         }
+        this.world.run()
     }
     getPlayers() {
         return this.players
@@ -58,6 +62,7 @@ class Player {
         this.id = id
         this.pos = pos || {x: 0, y: 0}
         this.heading = {x: 0, y: 0}
+        this.speed = 4
     }
     updateInput(input) {
         this.heading = input
@@ -72,8 +77,8 @@ class Player {
     }
     update() {
         //console.log(this.heading)
-        this.pos.x += this.heading.x
-        this.pos.y += this.heading.y
+        this.pos.x += this.heading.x * this.speed
+        this.pos.y += this.heading.y * this.speed
     }
 }
 
