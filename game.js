@@ -31,12 +31,12 @@ const air = {
 class Game {
     constructor() {
         this.cells = []
+        this.addCells(50)
     }
     run() {
         //move all the cells belonging to players
         for (let cell of this.cells) {
-            //console.log(cell)
-            if (cell.getType() === player.type) cell.update(this.cells)
+            if (cell.getType() === player.type) cell.move(this.cells)
         }
     }
     getGameData() {
@@ -47,8 +47,8 @@ class Game {
     clean(ids) {
         for (let i = this.cells.length - 1; i >= 0; i--) {
             let owner = this.cells[i].owner
-            let inlist = ids.find(id => owner === id || owner === 'none')
-            if (!inlist) {
+            let inlist = ids.find(id => owner === id)
+            if (!inlist && owner !== 'none') {
                 console.log('removing cell: ', this.cells[i])
                 this.cells.splice(i, 1)
             }
@@ -63,10 +63,20 @@ class Game {
         for (let cell of this.cells) {
             out.push({id: cell.owner, pos: cell.pos})
         }
+        //console.log(out.length)
         return out
     }
+    addCells(amount) {
+        for (let i = 0; i < amount; i++) {
+            let x = (Math.random() - 0.5) * 1000
+            let y = (Math.random() -0.5) * 1000
+            this.cells.push(new Cells.Cell('none', fire, {x, y}, cellcount))
+            cellcount ++
+        }
+    }
     addPlayer(id) {
-        this.cells.push(new Cells.Player(id, player, {x: 0, y: 0}))
+        this.cells.push(new Cells.Player(id, player, {x: 0, y: 0}, cellcount))
+        cellcount ++ //used for unique cell id's
         console.log('current players: ', this.getPlayers())
     }
     getPlayer(id) {
