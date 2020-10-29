@@ -14,7 +14,7 @@ let isMobile, fsbutton, orientation
 
 let bg
 
-let socket
+let socket, udp
 //change to host address
 const host = 'http://82.197.208.126:3000'
 
@@ -28,7 +28,6 @@ function setup() {
   environment = new Environment()
   
   fsbutton = new FullScreenButton()
-  //orientation = window.orientation
   //connect the socket
   socket = io()
 

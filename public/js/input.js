@@ -3,7 +3,7 @@ let controller = {
     origin: {x: 0, y: 0},
     dir: {x: 0, y: 0},
     active: false,
-    max: 60
+    max: 40
 }
 let pcontrol = controller.origin
 
@@ -38,20 +38,13 @@ function getMobileInput() {
         if (isnewcontrol) {
             controllerfound = true
             setController(t)
-            //alert('new controller')
         }
         else {
             //check if the touch has a line connected to the controller
             let iscontrol = isController(t)
             if (iscontrol) {
                 controllerfound = true
-                let angle = atan2(t.y - controller.origin.y , t.x - controller.origin.x)
-                let mag = dist(controller.origin.x, controller.origin.y, t.x, t.y)
-                mag = constrain(mag, 0, controller.max)
-                controller.dir.x = mag * cos(angle)
-                controller.dir.y = mag * sin(angle)
-                let inv = 1 / controller.max
-                diff = {x: controller.dir.x * inv, y: controller.dir.y * inv}
+                diff = getBounceInput(t)
                 pcontrol = t
             }
         }
@@ -60,12 +53,23 @@ function getMobileInput() {
     
     return diff
 }
+
+function getBounceInput(t) {
+    let angle = atan2(t.y - controller.origin.y , t.x - controller.origin.x)
+    let mag = dist(controller.origin.x, controller.origin.y, t.x, t.y)
+    mag = constrain(mag, 0, controller.max)
+    controller.dir.x = mag * cos(angle)
+    controller.dir.y = mag * sin(angle)
+    let inv = 1 / sq(controller.max)
+    return {x: controller.dir.x * mag * inv, y: controller.dir.y * mag * inv}
+}
+
 function drawMobileInput() {
     push()
     if (controller.active) {
         fill(255, 255, 255, 100)
         noStroke()
-        let bounds = 40
+        let bounds = 30
         circle(controller.origin.x, controller.origin.y, controller.max * 2 + bounds * 2)
         circle(controller.origin.x + controller.dir.x, controller.origin.y + controller.dir.y, bounds * 2)
     }

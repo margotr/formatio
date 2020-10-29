@@ -1,15 +1,43 @@
+const Cells = require('./cell.js')
+
+let cellcount = 0
+
+const player =   {
+        type: 0,
+        e_m: 1,
+        heat: 0
+    }
+const fire = {
+        type: 1,
+        e_m: 10,
+        heat: 1000
+    }
+const earth =   {
+        type: 2,
+        e_m: 0.2,
+        heat: 0
+    }
+const water = {
+        type: 3,
+        e_m: 0.4,
+        heat: 0
+    }
+const air = {
+        type: 4,
+        e_m: 2,
+        heat: 0
+    }
+
 class Game {
     constructor() {
-        this.players = []
-        //console.log(this.players)
+        this.cells = []
     }
     run() {
-        for (let player of this.players) {
-            player.update()
+        //move all the cells belonging to players
+        for (let cell of this.cells) {
+            //console.log(cell)
+            if (cell.getType() === player.type) cell.update(this.cells)
         }
-    }
-    getPlayers() {
-        return this.players
     }
     getGameData() {
         let out = {}
@@ -17,28 +45,33 @@ class Game {
         return out
     }
     clean(ids) {
-        for (let i = this.players.length - 1; i >= 0; i--) {
-            let inlist = ids.find(id => this.players[i].getID() === id)
+        for (let i = this.cells.length - 1; i >= 0; i--) {
+            let owner = this.cells[i].owner
+            let inlist = ids.find(id => owner === id || owner === 'none')
             if (!inlist) {
-                console.log('removing player: ', this.players[i])
-                this.players.splice(i, 1)
+                console.log('removing cell: ', this.cells[i])
+                this.cells.splice(i, 1)
             }
         }
     }
+    getPlayers() {
+        //FILTER !CREATES NEW ARRAY!
+        return this.cells.filter(cell => cell.getType() === player.type)
+    }
     getCells() {
         let out = []
-        for (let player of this.players) {
-            out.push({id: player.id, pos: player.getPos()})
+        for (let cell of this.cells) {
+            out.push({id: cell.owner, pos: cell.pos})
         }
         return out
     }
     addPlayer(id) {
-        this.players.push(new Player(id, {x:0, y: 0}))
-        console.log('current players: ', this.players)
+        this.cells.push(new Cells.Player(id, player, {x: 0, y: 0}))
+        console.log('current players: ', this.getPlayers())
     }
     getPlayer(id) {
-        for (let i = 0; i < this.players.length; i++) {
-            if (this.players[i].id === id) return this.players[i]
+        for (let cell of this.cells) {
+            if (cell.getType() === player.type && cell.owner === id) return cell
         }
         return null
     }
@@ -46,34 +79,10 @@ class Game {
         let player = this.getPlayer(id)
         if (!player) 
         {
-            //handle missing player input -> remove player(?)
+            //handle missing player input -> remove player?
             return null
         }
         player.updateInput(input)
-    }
-}
-
-class Player {
-    constructor(id, pos) {
-        this.id = id
-        this.pos = pos || {x: 0, y: 0}
-        this.heading = {x: 0, y: 0}
-    }
-    updateInput(input) {
-        this.heading = input
-        //console.log('updated heading:', this.heading)
-
-    }
-    getPos() {
-        return this.pos
-    }
-    getID() {
-        return this.id
-    }
-    update() {
-        //console.log(this.heading)
-        this.pos.x += this.heading.x
-        this.pos.y += this.heading.y
     }
 }
 
