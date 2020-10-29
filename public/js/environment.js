@@ -12,7 +12,7 @@ function getFocus(from) {
 function updatePos() {
     if (status === alive)
     for (let cell of cells) {
-      if (cell.owner === myid) {
+      if (cell.owner === myid && cell.type === player) {
         myPos = cell.pos
         break
       }

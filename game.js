@@ -31,7 +31,7 @@ const air = {
 class Game {
     constructor() {
         this.cells = []
-        this.addCells(50)
+        this.addCells(5)
     }
     run() {
         //move all the cells belonging to players
@@ -61,7 +61,14 @@ class Game {
     getCells() {
         let out = []
         for (let cell of this.cells) {
-            out.push({id: cell.owner, pos: cell.pos})
+            
+            out.push(
+                {id: cell.id, 
+                pos: cell.pos,
+                owner: cell.owner,
+                type: cell.element.type,
+                parent: (cell.parent) ? cell.parent.id : -1
+            })
         }
         //console.log(out.length)
         return out

@@ -22,6 +22,7 @@ class Cell {
             //update the distance to the target
             this.updateTargetDist()
             let targetAngle = this.getAngleToParent()
+            //console.log(targetAngle)
             let target = getTarget(this.parent.pos, targetAngle, this.targetDist)
 
             let diff = subtract(target, this.pos)
@@ -40,6 +41,7 @@ class Cell {
             if (cell.owner === 'none')
             {
                 let capturedistance = getTargetDist(this.radius, cell.radius)
+                //console.log(capturedistance)
                 if (dist(this.pos, cell.pos) < capturedistance ) {
                     cell.setParent(this.id, this.owner, cells)
                 }
@@ -65,15 +67,30 @@ class Cell {
         return this.parent.angle - this.targetAngle
     }
     setParent(parentid, owner, cells) {
+        console.log('capturing a cell!')
         this.parent = getCell(parentid, cells)
         this.owner = owner
-        this.targetAngle = getAngleTo(this.pos, this.parent.pos)
+        this.targetAngle = (getAngleTo(this.parent.pos, this.pos))
+        let targetDist = getTargetDist(this.parent.radius, this.radius)
+        console.log('original pos: ', this.pos)
+        console.log('dist between both: ', dist(this.parent.pos, this.pos))
+        let a = Math.atan2(this.pos.y - this.parent.pos.y, this.pos.x - this.parent.pos.x)
+        console.log('angle here: ', a)
+        let og = {
+            x: this.parent.pos.x + Math.cos(a) * targetDist,
+            y: this.parent.pos.y + Math.sin(a) * targetDist
+        }
+        console.log('og: ', og)
+        console.log('parent pos: ', this.parent.pos)
+        console.log('target dist: ', targetDist)
+        console.log('new pos = ', getTarget(this.parent.pos, this.targetAngle, targetDist))
     }
     updateTargetDist() {
         this.targetDist = getTargetDist(this.radius, this.parent.radius)
     } 
     updateAngle() {
         this.angle = convergeAngle(this.angle, this.parent.angle, 0.2)
+        this.angle %= (Math.PI * 2)
     }
     calcRadius() {
         const c = 10
@@ -109,7 +126,9 @@ class Player extends Cell {
         this.pos.x += this.heading.x * this.speed
         this.pos.y += this.heading.y * this.speed
         //converge the angle in movement direction
-        this.angle = convergeAngle(this. angle, this.getDir(), 0.04)
+        this.angle = convergeAngle(this.angle, this.getDir(), 0.04)
+        this.angle %= (Math.PI * 2)
+        //console.log(this.angle)
         //update the cell
         this.update(cells)
     }
@@ -173,6 +192,12 @@ function getRelativeAngle(angle1, angle2) {
 function getTargetDist(r1, r2) {
     return r1 + r2 + forcefield_dist
 }
+
+//this.targetAngle = (getAngleTo(this.parent.pos, this.pos)) % Math.PI * 2
+ //       let targetDist = getTargetDist(this.parent.radius, this.radius)
+ //       console.log('original pos: ', this.pos)
+ //       console.log('dist between both: ', dist(this.parent.pos, this.pos))
+ //       let a = Math.atan2(this.pos.y - this.parent.pos.y, this.pos.x - this.parent.pos.x)
 
 function getAngleTo(p1, p2) {
     return Math.atan2(p2.y - p1.y, p2.x - p1.x)

@@ -1,11 +1,11 @@
 class Cell {
-    constructor(owner, pos) {
+  //cells.push(new Cell(cell.owner, cell.id, cell.pos, cell.type, cell.parent))
+    constructor(owner, id, pos, type, parent) {
       this.owner = owner
+      this.id = id
       this.pos = createVector(pos.x, pos.y)
-    }
-  
-    getPos() {
-      return this.pos
+      this.type = type
+      this.parent = parent
     }
     draw() {
       push()

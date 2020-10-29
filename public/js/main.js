@@ -1,4 +1,4 @@
-const fire = 0, water = 1, earth = 2, air = 3
+const player = 0, fire = 1, earth = 2, water = 3, air = 4
 const alive = 1, dead = 0
 
 let camera
@@ -67,8 +67,15 @@ function startPlayer(data) {
 function update(data) {
   cells = []
   //console.log(data.cells)
+  /*
+                id: cell.id, 
+                pos: cell.pos,
+                owner: cell.owner,
+                type: cell.element.type,
+                parent: (cell.parent) ? cell.parent.id : -1
+  */
   for (let cell of data.cells) {
-    cells.push(new Cell(cell.id, cell.pos))
+    cells.push(new Cell(cell.owner, cell.id, cell.pos, cell.type, cell.parent))
   }
 }
 
