@@ -1,48 +1,31 @@
 const Cells = require('./cell.js')
 
-let cellcount = 0
-
-const player =   {
-        type: 0,
-        e_m: 1,
-        heat: 0
-    }
-const fire = {
-        type: 1,
-        e_m: 10,
-        heat: 1000
-    }
-const earth =   {
-        type: 2,
-        e_m: 0.2,
-        heat: 0
-    }
-const water = {
-        type: 3,
-        e_m: 0.4,
-        heat: 0
-    }
-const air = {
-        type: 4,
-        e_m: 2,
-        heat: 0
-    }
-
-class Game {
+module.exports = class Game {
     constructor() {
         this.cells = []
-        this.addCells(5)
+        this.queue = []
+        this.events = []
+        this.playercount = 0
+        this.cellcount = 0
+        this.addCells(50, 3000)
     }
     run() {
         //move all the cells belonging to players
         for (let cell of this.cells) {
-            if (cell.getType() === player.type) cell.move(this.cells)
+            if (cell.getType() === Cells.player.type) cell.move(this.cells, this.events)
         }
     }
     getGameData() {
         let out = {}
-        out.cells = this.getCells()
+            out.cells = this.getCells()
+            out.events = this.getEvents()
         return out
+    }
+    getEvents() {
+        return this.events
+    }
+    addEvent(p1, p2) {
+        this.events.push({p1, p2})
     }
     clean(ids) {
         for (let i = this.cells.length - 1; i >= 0; i--) {
@@ -56,39 +39,66 @@ class Game {
     }
     getPlayers() {
         //FILTER !CREATES NEW ARRAY!
-        return this.cells.filter(cell => cell.getType() === player.type)
+        return this.cells.filter(cell => cell.getType() === Cells.player.type)
+    }
+    createGameID() {
+        return this.playercount++
     }
     getCells() {
         let out = []
         for (let cell of this.cells) {
-            
             out.push(
-                {id: cell.id, 
+                {
+                id: cell.id, 
                 pos: cell.pos,
                 owner: cell.owner,
+                name: (cell.getType() === Cells.player.type) ? cell.name : 0,
                 type: cell.element.type,
                 parent: (cell.parent) ? cell.parent.id : -1
             })
         }
-        //console.log(out.length)
         return out
     }
-    addCells(amount) {
+    addCells(amount, spread) {
         for (let i = 0; i < amount; i++) {
-            let x = (Math.random() - 0.5) * 1000
-            let y = (Math.random() -0.5) * 1000
-            this.cells.push(new Cells.Cell('none', fire, {x, y}, cellcount))
-            cellcount ++
+            let x = (Math.random() - 0.5) * spread * 2
+            let y = (Math.random() -0.5) * spread * 2
+            this.cells.push(new Cells.Cell(-1, {x, y}, this.cellcount++))
         }
     }
-    addPlayer(id) {
-        this.cells.push(new Cells.Player(id, player, {x: 0, y: 0}, cellcount))
-        cellcount ++ //used for unique cell id's
-        console.log('current players: ', this.getPlayers())
+    getQueued(game_id) {
+        for (let player of this.queue) {
+            if (player.owner === game_id) return player
+        }
+        return null
+    }
+    removeFromQueue(game_id) {
+        for (let i = this.queue.length - 1; i >= 0; i--) {
+            if (this.queue[i].owner === game_id)
+            {
+                this.queue.splice(i, 1)
+                break
+            }
+        }
+    }
+    startPlayer(game_id) {
+        //adds queued players to the game
+        let player = this.getQueued(game_id)
+        this.cells.push(player)
+        console.log('players', this.getPlayers())
+        this.removeFromQueue(game_id)
+    } 
+    addPlayer(creds) {
+        let name = creds.username
+        let game_id = this.createGameID()
+        //added to queue instead of directly to game since socket still has to be set up
+        //that takes +- 1 second
+        this.queue.push(new Cells.Player(name, game_id, {x: 0, y: 0}, this.cellcount++))
+        return game_id
     }
     getPlayer(id) {
         for (let cell of this.cells) {
-            if (cell.getType() === player.type && cell.owner === id) return cell
+            if (cell.getType() === Cells.player.type && cell.owner === id) return cell
         }
         return null
     }
@@ -101,8 +111,4 @@ class Game {
         }
         player.updateInput(input)
     }
-}
-
-module.exports = {
-    Game
 }

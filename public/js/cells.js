@@ -1,7 +1,8 @@
 class Cell {
   //cells.push(new Cell(cell.owner, cell.id, cell.pos, cell.type, cell.parent))
-    constructor(owner, id, pos, type, parent) {
+    constructor(owner, name, id, pos, type, parent) {
       this.owner = owner
+      this.name = name
       this.id = id
       this.pos = createVector(pos.x, pos.y)
       this.type = type
@@ -19,7 +20,7 @@ class Cell {
           circle(p.x, p.y, 50)
           fill(255)
           textAlign(CENTER)
-          text(this.owner, p.x, p.y - 50)
+          text(this.name, p.x, p.y - 50)
         }
       pop()
     }

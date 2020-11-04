@@ -10,12 +10,13 @@ function getFocus(from) {
 }
 
 function updatePos() {
-    if (status === alive)
-    for (let cell of cells) {
-      if (cell.owner === myid && cell.type === player) {
-        myPos = cell.pos
-        break
-      }
+    if (myid !== null) {
+        for (let cell of cells) {
+        if (cell.owner === myid && cell.type === player) {
+            myPos = cell.pos
+            break
+            } 
+        }    
     }
   }
 
@@ -26,12 +27,18 @@ function halfScreen() {
 function inbounds(pos) {
     return (pos.x > 0 && pos.x < windowWidth && pos.y > 0 && pos.y < windowHeight)
 }
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight)
+    if (myid) initButtons(myWeapons)
+    //alert(buttons[0].x + ' ' + buttons[0].y)
+  }
 
 function Environment() {
     this.draw = function() {
         background(bg)
         this.drawCircle(createVector(0, 0), color(255, 255, 255))
         this.drawGrid(25)
+        this.drawEvents()
     }
 
     this.drawCircle = function(pos, color) {
@@ -42,6 +49,12 @@ function Environment() {
             fill(color)
             circle(p.x, p.y, 30)
             pop()
+        }
+    }
+    this.drawEvents = function() {
+        for (let e of events) {
+            this.drawCircle(createVector(e.p1.x, e.p1.y), color(255, 0, 0, 100))
+            this.drawCircle(createVector(e.p2.x, e.p2.y), color(0, 255, 0, 100))
         }
     }
     this.drawGrid = function(spacing) {
