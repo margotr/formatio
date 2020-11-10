@@ -1,27 +1,11 @@
 //here the functions that get input live happily
-let controller = {
-    origin: {x: 0, y: 0},
-    dir: {x: 0, y: 0},
-    active: false,
-    max: 40,
-}
-let drawer = {
-    active: false,
-    points: []
-}
-
-let buttons = []
-let pressedButtons = []
-
-let buttondia = 50
-
-let leftBumper, rightBumper
-let pcontrol = controller.origin
-
 function sendInput() {
     //alert(isMobile)
-    let input = (isMobile) ? getMobileInput() : getPCInput()
-    socket.send(JSON.stringify({type: 'input', id: myid, input}))
+    gamestream.send(JSON.stringify({
+        type: 'input', 
+        id: myid, 
+        input: input.get()
+    }))
 }
 
 function updateInput() {
@@ -30,165 +14,140 @@ function updateInput() {
     setTimeout(updateInput, 34) //30hz input
 }
 
-function getPCInput() {
-    let dir = createVector(mouseX, mouseY).sub(halfScreen())
-    // multiply the direction so it's a value between -1 and 1
-    dir.x /= halfScreen().x
-    dir.y /= halfScreen().y
-
-    return {x: dir.x, y: dir.y}
-}
-
-function getMobileInput() {
-    let controllerfound = false, drawerfound = false
-    let diff = {x: 0, y: 0}
-    let attack = -1
-    //bg = Math.round(touches.length * 30)
-    for (let t of touches) 
-    {
-        if (newController(t)) 
-        {
-            controllerfound = true
-            setController(t)
+class MobileInput {
+    constructor() {
+        this.controller = {
+            origin: {x: 0, y: 0},
+            dir: {x: 0, y: 0},
+            active: false,
+            max: 40,
         }
-        else 
-        {
-            //check if the touch has a line connected to the controller
-            if (isController(t)) 
-            {
+        this.pcontrol = this.controller.origin
+        this.drawer = {
+            active: false,
+            points: []
+        }
+        this.buttons = []
+        this.rotationLock = false
+        this.buttondia = 50
+    }
+    get() {
+        let controllerfound = false, drawerfound = false
+        let diff = {x: 0, y: 0}
+        let attack = -1
+        for (let t of touches) {
+                if (this.newController(t)) {
                 controllerfound = true
-                diff = getBounceInput(t)
-                pcontrol = t
+                this.setController(t)
             }
-            else 
-            {
-                //handle button input for each touch
-                if (newDrawer(t)) 
-                {
-                    drawerfound = true
-                    setDrawer(t)
+            else {
+                if (this.isController(t))  {
+                    controllerfound = true
+                    diff = this.getBounceInput(t)
+                    this.pcontrol = t
                 }
-                else if (isDrawer(t)) 
+                else 
                 {
-                    drawerfound = true
-                    drawer.points.push(t)
+                    //handle button input for each touch
+                    if (this.newDrawer(t)) 
+                    {
+                        drawerfound = true
+                        this.setDrawer(t)
+                    }
+                    else if (this.isDrawer(t)) 
+                    {
+                        drawerfound = true
+                        this.drawer.points.push(t)
+                    }
+                    else {
+                        //check for other buttons
+                        //if ()
+                    }
                 }
+            } 
+        }
+        if (!drawerfound) {
+            let data = this.getDrawerData()
+            if (data.length > 0) {
+                //add data to outbound here
+                console.log(data)
             }
+            this.resetDrawer()
         }
+        if (!controllerfound) this.resetController()
+        
+        return diff
     }
-
-    if (!drawerfound) {
-        let data = getDrawerData()
-        if (data.length > 0) {
-            //add data to outbound here
-            console.log(data)
-            pressedButtons = data
+    draw() {
+        push()
+        if (this.controller.active) {
+            fill(255, 255, 255, 100)
+            noStroke()
+            let bounds = 30
+            circle(this.controller.origin.x, this.controller.origin.y, this.controller.max * 2 + bounds * 2)
+            circle(this.controller.origin.x + this.controller.dir.x, this.controller.origin.y + this.controller.dir.y, bounds * 2)
         }
-        resetDrawer()
+        pop()
+        this.drawButtons()
+        this.drawField()
     }
-    if (!controllerfound) resetController()
-    
-    return diff
-}
-
-function getBounceInput(t) {
-    let angle = atan2(t.y - controller.origin.y , t.x - controller.origin.x)
-    let mag = dist(controller.origin.x, controller.origin.y, t.x, t.y)
-    mag = constrain(mag, 0, controller.max)
-    controller.dir.x = mag * cos(angle)
-    controller.dir.y = mag * sin(angle)
-    let inv = 1 / sq(controller.max)
-    return {x: controller.dir.x * mag * inv, y: controller.dir.y * mag * inv}
-}
-
-function drawMobileInput() {
-    push()
-    if (controller.active) {
-        fill(255, 255, 255, 100)
-        noStroke()
-        let bounds = 30
-        circle(controller.origin.x, controller.origin.y, controller.max * 2 + bounds * 2)
-        circle(controller.origin.x + controller.dir.x, controller.origin.y + controller.dir.y, bounds * 2)
+    drawButtons() {
+        push()
+        fill(255)
+        if (this.buttons.length !== 0) {
+            //console.log(buttons[0].pos, width, height)
+        }
+        for (let b of this.buttons) {
+            circle(b.pos.x, b.pos.y, this.buttondia)
+        }
+        pop()
     }
-    pop()
-    showButtons()
-    drawField()
-}
-
-function showButtons() {
-    push()
-    fill(255)
-    if (buttons.length !== 0) {
-        //console.log(buttons[0].pos, width, height)
+    getBounceInput(t) {
+        let angle = atan2(t.y - this.controller.origin.y , t.x - this.controller.origin.x)
+        let mag = dist(this.controller.origin.x, this.controller.origin.y, t.x, t.y)
+        mag = constrain(mag, 0, this.controller.max)
+        this.controller.dir.x = mag * cos(angle)
+        this.controller.dir.y = mag * sin(angle)
+        let inv = 1 / sq(this.controller.max)
+        return {x: this.controller.dir.x * mag * inv, y: this.controller.dir.y * mag * inv}
     }
-    for (let b of buttons) {
-        circle(b.pos.x, b.pos.y, buttondia)
-    }
-    pop()
-    //drawBumper(leftBumper, pressState[leftBumper.value])
-    //drawBumper(rightBumper, pressState[rightBumper.value])
-}
-
-function drawBumper(bumper, pressed) {
-    push()
-    stroke(100, 240)
-    strokeWeight(10)
-    if (pressed) fill(100, 60)
-    else fill(100, 0)
-    rect(bumper.x, bumper.y, bumper.w, bumper.h)
-    pop()
-}
-function getButtonInput(touch) {
-    if (bumperPressed(leftBumper, touch)) return leftBumper.value
-    if (bumperPressed(rigthBumper, touch)) return rightBumper.value
-    return null
-}
-
-function getDist(a, b) {
-    return sqrt(sq(a.x - b.x) + (a.y - b.y))
-}
-
-function drawField() {
-    let pp = (drawer.points.length !== 0) ? drawer.points[0] : null
+    drawField() {
+    let pp = (this.drawer.points.length !== 0) ? this.drawer.points[0] : null
     if (!pp) return null
     push()
     stroke(255)
     strokeWeight(5)
-    for (let i = 1; i < drawer.points.length; i++) {
-        let p = drawer.points[i]
+    for (let i = 1; i < this.drawer.points.length; i++) {
+        let p = this.drawer.points[i]
         line(pp.x, pp.y, p.x, p.y)
         pp = p
     }
     pop()
 }
-
-function setDrawer(touch) {
-    drawer.active = true
-    drawer.points.push(touch)
+setDrawer(touch) {
+    this.drawer.active = true
+    this.drawer.points.push(touch)
 }
-function resetDrawer() {
-    drawer.active = false,
-    drawer.points = []
-}
-
-function isDrawer(touch) {
-    if (!drawer.active) return false
-    return (isClose(touch, drawer.points[drawer.points.length - 1]))
+resetDrawer() {
+    this.drawer.active = false,
+    this.drawer.points = []
 }
 
-function inDrawScreen(touch) {
+isDrawer(touch) {
+    if (!this.drawer.active) return false
+    return (isClose(touch, this.drawer.points[this.drawer.points.length - 1]))
+}
+inDrawScreen(touch) {
     return (touch.x > halfScreen().x && touch.y > halfScreen().y - 100)
 }
-
-function newDrawer(touch) {
-    return (inDrawScreen(touch) && !drawer.active)
+newDrawer(touch) {
+    return (this.inDrawScreen(touch) && !this.drawer.active)
 }
-
-function getDrawerData() {
-    let diasq = Math.pow((buttondia / 2), 2)
+getDrawerData() {
+    let diasq = Math.pow((this.buttondia / 2), 2)
     let pressed = []
-    for (let b of buttons) {
-        for (let p of drawer.points) {
+    for (let b of this.buttons) {
+        for (let p of this.drawer.points) {
         if (Math.pow(p.x - b.pos.x, 2) + Math.pow(p.y - b.pos.y, 2) < diasq) {
             pressed.push(b.button)
             break
@@ -197,49 +156,45 @@ function getDrawerData() {
     }
     return pressed
 }
-
-function setController(touch) {
-    controller.active = true
-    controller.origin = touch
-    pcontrol = touch
+ setController(touch) {
+    this.controller.active = true
+    this.controller.origin = touch
+    this.pcontrol = touch
+} 
+resetController() {
+    this.controller.active = false
 }
-function resetController() {
-    controller.active = false
+ isController(touch) {
+    return (isClose(touch, this.pcontrol)) 
 }
-
-function isController(touch) {
-    return (isClose(touch, pcontrol)) 
+newController(touch) {
+    return (touch.x < halfScreen().x && touch.y > 100 && !this.controller.active)
 }
-
-function newController(touch) {
-    return (touch.x < halfScreen().x && touch.y > 100 && !controller.active)
-}
-
-function initButtons(visible) {
-    let origin = {x: width - 120, y: height - 120}
-    //45 degree start
-    buttons = []
-    if (visible.length !== 0) buttons.push({button: visible[0], pos: origin})
-    for (let i = 0; i < visible.length - 1; i++) {
-        let button = visible[i + 1]
-        let angle = Math.PI * 2/3 - ((Math.PI * 2) / 6) * i
-        let x = origin.x + Math.cos(angle) * 80
-        let y = origin.y + Math.sin(angle) * 80
-        buttons.push({button, pos: {x, y}})
+initButtons(visible) {
+    let origin = {x: width - 120, y: height - 120} 
+    this.buttons = []
+    if (visible.length !== 0) this.buttons.push({button: visible[0], pos: origin})
+        for (let i = 0; i < visible.length - 1; i++) {
+            let button = visible[i + 1]
+            let angle = Math.PI * 2/3 - ((Math.PI * 2) / 6) * i
+            let x = origin.x + Math.cos(angle) * 80
+            let y = origin.y + Math.sin(angle) * 80
+            this.buttons.push({button, pos: {x, y}})
+        }
     }
+}
+
+class PCInput {
+    constructor() {
+
+    }
+    get() {
+        let dir = createVector(mouseX, mouseY).sub(halfScreen())
+        // multiply the direction so it's a value between -1 and 1
+        dir.x /= halfScreen().x
+        dir.y /= halfScreen().y
     
-    leftBumper = {
-        x: 70,
-        y: 0,
-        w: 150,
-        h: 80,
-        value: buttons.length + 1
-    }
-    rightBumper = {
-        x: width - (150 + 70),
-        y: 0,
-        w: 150,
-        h: 80,
-        value: buttons.length + 2
+        return {x: dir.x, y: dir.y}
     }
 }
+

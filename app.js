@@ -37,9 +37,10 @@ app.post("/game_id", (req, res) => {
   if (!creds) creds = accountmanager.addAccount()
   const response = {
     session: creds.session,
-    id: game.addPlayer(creds)
+    id: game.addPlayer(creds),
+    level: game.getGameData()
   }
-  console.log(response)
+  console.log('assigned id: ', response.id)
   res.send(response)
 })
 

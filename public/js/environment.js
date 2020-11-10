@@ -29,9 +29,104 @@ function inbounds(pos) {
 }
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight)
-    if (myid) initButtons(myWeapons)
+    if (myid) input.initButtons(myWeapons)
     //alert(buttons[0].x + ' ' + buttons[0].y)
   }
+
+class Level {
+    constructor(leveldata) {
+        console.log(leveldata)
+        this.trees = []
+        for (let tree of leveldata) {
+            this.trees.push(new Tree(tree.x, tree.y, tree.seed))
+        }
+        console.log(this.trees)
+    }
+    draw() {
+        for (let tree of this.trees) {
+            tree.draw()
+        }
+    }
+}
+
+class Tree {
+  constructor(x, y, seed) {
+    randomSeed(seed)
+    this.x = x
+    this.y = y
+    this.branchcount = 3 + (random() * 4)
+    this.branches = this.divideBranches()
+  }
+  draw() {
+    push()
+    noStroke()
+    fill(90, 60, 0)
+    let origin = getFocus(createVector(this.x, this.y))
+    circle(origin.x, origin.y, 30)
+    for (let b of this.branches) {
+      let x = origin.x + b.x
+      let y = origin.y + b.y
+      strokeWeight(7)
+      stroke(90, 60, 0)
+      line(origin.x, origin.y, x, y)
+      for (let t of b.twigs) {
+        line(x, y, x + t.x, y + t.y)
+      }
+    }
+     for (let b of this.branches) {
+      let x = origin.x + b.x
+      let y = origin.y + b.y
+      noStroke()
+      fill(0, 255, 0, 255)
+      circle(x, y, b.l * 2)
+      for (let t of b.twigs) {
+        circle(x + t.x, y + t.y, t.l * 2)
+      }
+    }
+    pop()
+  }
+  divideBranches() {
+    let branches = divideAngles(this.branchcount, 0, 0, 30)
+    branches.forEach(branch => this.spread(branch))
+    //console.log(branches)
+    return branches
+  }
+  spread(branch) {
+    let twigamount = Math.round(random() * (branch.l / 10))
+    console.log(twigamount)
+    branch.twigs = divideAngles(twigamount, 0, 0, branch.l *= 0.6)
+  }
+}
+
+function divideAngles(amount, startleft, startright, minbranch) {
+  let partitions = []
+    let total = 0
+    for (let i = 0; i < amount; i++) {
+      let ratio = random()
+      total += ratio
+      partitions.push(ratio)
+    }
+  let piparts = partitions.map(part => 
+      map(part, 0, total, 0, Math.PI * 2 - (startleft + startright)))
+  let branches = []
+  let a = startleft
+    for (let p of piparts) {
+      a += p
+      let l = minbranch + (random() * 20)
+      let x = Math.cos(a) * l
+      let y = Math.sin(a) * l
+      branches.push({a, l, x, y, twigs: []})
+    }
+  return branches
+}
+
+
+
+
+
+
+
+
 
 function Environment() {
     this.draw = function() {

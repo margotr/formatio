@@ -1,7 +1,7 @@
 const player = 0, fire = 1, earth = 2, water = 3, air = 4
 
 let camera
-let environment, screem
+let environment, level
 
 let myPos
 let myid = null
@@ -13,12 +13,13 @@ let myWeapons = [
 ]
 
 let isMobile, fsbutton, orientation
+let input
 
 let bg
 
-let socket, udp
+let gamestream
 //change to host address
-const host = '192.168.178.48:3000'
+const host = 'localhost:3000'
 
 p5.disableFriendlyErrors = true
 
@@ -28,6 +29,9 @@ function setup() {
   bg = color(51, 51, 51)
 
   isMobile = isMobileDevice()
+  if (isMobile) input = new MobileInput()
+  else input = new PCInput()
+
   screen = createCanvas(windowWidth, windowHeight)
   environment = new Environment()
   
@@ -35,19 +39,19 @@ function setup() {
 
   //register as a player on the server
   registerPlayer()
-  console.log(isClose)
+  //console.log(isClose)
   }
 
 function draw() {
   updateCamera()
   environment.draw()
   cells.forEach(cell => cell.draw())
-
+  level.draw()
   fsbutton.draw()
 
   //console.log(width, height)
 
-  if (isMobile) drawMobileInput()
+  if (isMobile) input.draw()
 }
 
 async function registerPlayer() {
@@ -60,8 +64,10 @@ async function registerPlayer() {
     if (gamedetails.session) {
       setCookie('sess_id', gamedetails.session, 7)
     }
-    console.log('starting game: ', myid)
-    openSocket()
+    //console.log(gamedetails)
+    level = new Level(gamedetails.level.level)
+    //console.log('starting game: ', myid)
+    openStream()
   }
 }
 
@@ -86,51 +92,9 @@ function isMobileDevice() {
   return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
 }
 
-function openSocket() {
-  socket = new WebSocket('ws://' + host + '/gamestream')
-  socket.onopen = () => {
-    // now we are connected
-    console.log('connected socket')
-    socket.send(JSON.stringify({type: 'ready', id: myid})) //send a ready message
-    socket.onmessage = (message) => {
-      // here we got something sent from the server
-      let data = JSON.parse(message.data)
-      switch(data.type) {
-        case 'start':
-          console.log("we can start", myid)
-          startGame()
-        break
-        case 'update':
-          update(data)
-        break
-      }
-    }
-  }
-}
-
 function startGame() {
-  initButtons(myWeapons)
+  if (isMobile) input.initButtons(myWeapons)
   updateInput()
-}
-
-function update(data) {
-  cells = []
-  //console.log(data.gamedata.cells)
-  /*
-                id: cell.id, 
-                pos: cell.pos,
-                owner: cell.owner,
-                type: cell.element.type,
-                parent: (cell.parent) ? cell.parent.id : -1
-  */
-  for (let cell of data.gamedata.cells) {
-    //console.log(cell.name)
-    cells.push(new Cell(cell.owner, cell.name, cell.id, cell.pos, cell.type, cell.parent))
-  }
-  events = []
-  for (let event of data.gamedata.events) {
-    events.push(event)
-  }
 }
 
 

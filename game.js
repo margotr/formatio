@@ -1,25 +1,37 @@
 const Cells = require('./cell.js')
+const Level = require('./level.js')
 
 module.exports = class Game {
     constructor() {
         this.cells = []
         this.queue = []
         this.events = []
+        this.level = new Level()
         this.playercount = 0
         this.cellcount = 0
         this.addCells(50, 3000)
     }
     run() {
+        //update level
+        //this.level.update()
         //move all the cells belonging to players
         for (let cell of this.cells) {
-            if (cell.getType() === Cells.player.type) cell.move(this.cells, this.events)
+            if (cell.getType() === Cells.player.type) 
+            {
+                cell.move(this.cells, this.events)
+                //this.level.collide(cell)
+            }
         }
     }
     getGameData() {
         let out = {}
             out.cells = this.getCells()
             out.events = this.getEvents()
+            out.level = this.getLevel()
         return out
+    }
+    getLevel() {
+        return this.level.getall()
     }
     getEvents() {
         return this.events

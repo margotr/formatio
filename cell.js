@@ -45,11 +45,9 @@ class Cell {
         //apply forces to cells outside of this cell's structure
         this.captureCells(cells, events)
         if (this.parent) {
-            //update the distance to the target
             this.updateTargetDist()
             this.updateAngle()
             let targetAngle = this.getAngleToParent()
-            //console.log(targetAngle)
             let target = getTarget(this.parent.pos, targetAngle, this.targetDist)
 
             let diff = subtract(target, this.pos)
@@ -125,7 +123,7 @@ class Player extends Cell {
         this.element = player
         this.name = name
         this.heading = {x: 0, y: 0}
-        this.speed = 2
+        this.speed = 8
     }
     updateInput(input) {
         this.heading = input
